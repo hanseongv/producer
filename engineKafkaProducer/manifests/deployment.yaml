@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: engine-kafka-producer
+  namespace: default
+  labels:
+    app: engine-kafka-producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: engine-kafka-producer
+  template:
+    metadata:
+      labels:
+        app: engine-kafka-producer
+    spec:
+      containers:
+        - name: engine-kafka-producer
+          image:
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: BOOTSTRAP-HF-SERVERS
+              value:
+            - name: BOOTSTRAP-FNNS-SERVERS
+              value:
+            - name: BOOTSTRAP-FSBD-SERVERS
+              value:
+            - name: KAFKA-USERNAME
+              value:
+            - name: KAFKA-PASSWORD
+              value:
+            - name: SERVER-PORT
+              value: "8080"
+          command: ["/bin/sh","-c"]
+          args:
+            [
+                  "java -jar ./engineKafkaProducer-0.0.1-SNAPSHOT.jar --bootstrap.hf.servers=$(BOOTSTRAP-HF-SERVERS) --bootstrap.fnns.servers=$(BOOTSTRAP-FNNS-SERVERS) --bootstrap.fsbd.servers=$(BOOTSTRAP-FSBD-SERVERS) --kafka.username=$(KAFKA-USERNAME) --kafka.password=$(KAFKA-PASSWORD) --server.port=$(SERVER-PORT)",
+            ]
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /health
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /health
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 1024m
+              memory: 1024Mi
+            limits:
+              cpu: 1536m
+              memory: 1536Mi
+
+
